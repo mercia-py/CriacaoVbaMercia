@@ -1,0 +1,75 @@
+Sub CopiarDadosPersonalizado()
+    Dim oDoc As Object
+    Dim oPlanilhaOrigem As Object
+    Dim oPlanilhaDestino As Object
+    Dim oCelula As Object
+    Dim oCelulaDestino As Object
+    Dim oIntervalo As Object
+    Dim ultimaLinha As Long
+    Dim ultimaLinhaDestino As Long
+    Dim intervaloColunas As String
+    Dim intervaloArray() As String
+    Dim inicioColuna As Long
+    Dim fimColuna As Long
+    Dim abaOrigemNome As String
+    Dim linhaDestinoInput As String
+    Dim colunaOrigem As Long
+    
+    ' Acessar o documento atual do LibreOffice Calc
+    oDoc = ThisComponent
+    
+    ' Solicitar ao usuário o nome da aba de origem
+    abaOrigemNome = InputBox("Digite o nome da aba de origem (exemplo: 'COLETANORTEL-MAR- 20- 2025'):", "Nome da Aba de Origem", "COLETANORTEL-MAR- 21- 2025")
+    
+    ' Tentar definir a planilha de origem com o nome inserido pelo usuário
+    oPlanilhaOrigem = oDoc.Sheets.getByName(abaOrigemNome)
+    
+    ' Verificar se a aba existe
+    If IsNull(oPlanilhaOrigem) Then
+        MsgBox "A aba especificada não existe. Por favor, insira um nome de aba válido.", 16, "Erro"
+        Exit Sub
+    End If
+    
+    ' Definir a planilha de destino (Planilha2)
+    oPlanilhaDestino = oDoc.Sheets.getByName("Planilha2")
+    
+    ' Solicitar ao usuário para escolher a coluna de origem (onde o nome "SERRA" será encontrado)
+    colunaOrigem = Val(InputBox("Digite o número da coluna de origem (onde está o nome 'SERRA'):", "Coluna de Origem", 8)) ' Default: 8 (coluna H)
+    
+    ' Solicitar ao usuário para escolher a célula de destino (onde os dados serão colados na Planilha2)
+    linhaDestinoInput = InputBox("Digite a célula de destino onde os dados serão colados (exemplo: A1):", "Célula de Destino", "A1")
+    
+    ' Definir a célula de destino com base na entrada do usuário
+    oCelulaDestino = oPlanilhaDestino.getCellRangeByName(linhaDestinoInput)
+    
+    ' Solicitar ao usuário o intervalo de colunas para copiar (por exemplo, 'A:G')
+    intervaloColunas = InputBox("Digite o intervalo de colunas que deseja copiar (exemplo: A:G):", "Intervalo de Colunas", "A:G")
+    
+    ' Separar o intervalo de colunas
+    intervaloArray = Split(intervaloColunas, ":")
+    
+    ' Converter as letras das colunas em números (A=1, B=2, ..., G=7, etc.)
+    inicioColuna = Asc(UCase(intervaloArray(0))) - 64
+    fimColuna = Asc(UCase(intervaloArray(1))) - 64
+    
+    ' Encontrar a última linha preenchida na coluna de origem da planilha de origem
+    ultimaLinha = oPlanilhaOrigem.getCellByPosition(colunaOrigem - 1, oPlanilhaOrigem.Rows.Count - 1).End(4).Row
+    
+    ' Iniciar o loop para percorrer as células da coluna de origem na aba de origem
+    For i = 0 To ultimaLinha
+        oCelula = oPlanilhaOrigem.getCellByPosition(colunaOrigem - 1, i)
+        
+        ' Verificar se o valor da célula é "SERRA"
+        If oCelula.getString() = "SERRA" Then
+            ' Copiar os dados do intervalo de colunas especificado da linha encontrada
+            oIntervalo = oPlanilhaOrigem.getCellRangeByPosition(inicioColuna - 1, i, fimColuna - 1, i)
+            oIntervalo.copyRange(oCelulaDestino.getPosition(), oIntervalo.getRangeAddress())
+            
+            ' Atualizar a célula de destino para a próxima linha
+            oCelulaDestino = oPlanilhaDestino.getCellByPosition(oCelulaDestino.getColumn(), oCelulaDestino.getRow() + 1)
+        End If
+    Next i
+    
+    ' Exibir a mensagem final
+    MsgBox "Finalizado", 64, "Conclusão"
+End Sub
