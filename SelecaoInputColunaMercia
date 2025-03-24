@@ -1,0 +1,105 @@
+
+
+
+'>OBJETIVO: UNIFICAR INFORMACOES EM CONDICOES DE DESORDEM DENTRO DE UMA PLANILHA ÚNICA
+'___________________________________________________________________________,
+
+'>PASSO (1):
+'>Abra a Planilha com o nome "PLANILHACOLETA_NORTELMKT"
+'>Abra uma Nova Planilha & Renomeie de "Planilha2"
+'>Coloque essa Informação abaixo em cada coluna onde se Localiza Range("A1").Select.
+'>"AGENDA	P. COMPRA 	NOTA F.	VOLUME	PESO	DATA DE COLETA	VAZIA!	UNIDADE".
+'>Fim!
+'___________________________________________________________________________,
+
+'>PASSO (2):
+'>Copie e cole o Código Abaixo no desenvolvedor VBA:
+'<Fim!
+'___________________________________________________________________________,
+
+Sub CopiarDadosPersonalizado_Mercia()
+
+'Serve para copiar e colar dados desoganizados e colocar dentro de uma planilha unica
+    'Este Código foi Criado e Desenvolvido Por : Mércia Lima Alves (Assistente Transportes-MarketCargo)
+    
+    'Declarando Variáveis do objeto.
+    
+    Dim wsOrigem As Worksheet       'Declarando a planilha
+    Dim wsDestino As Worksheet
+    Dim ultimaLinha As Long
+    Dim linhaDestino As Long
+    Dim celula As Range
+    Dim ultimaLinhaDestino As Long
+    Dim colunaOrigem As Integer
+    Dim intervaloColunas As String
+    Dim intervaloArray() As String
+    Dim inicioColuna As Integer
+    Dim fimColuna As Integer
+    Dim i As Integer
+    Dim destinoCelula As Range
+    Dim abaOrigemNome As String
+    
+    ' Solicitar ao usuário o nome da aba de origem
+    abaOrigemNome = InputBox("Digite o nome da aba de origem (exemplo: 'COLETANORTEL-MAR- 20- 2025'):", "Nome da Aba de Origem", "COLETANORTEL-MAR- 21- 2025")
+    
+    ' Tentar definir a planilha de origem com o nome inserido pelo usuário
+    On Error Resume Next
+    Set wsOrigem = ThisWorkbook.Sheets(abaOrigemNome)
+    On Error GoTo 0
+    
+    ' Verificar se a aba existe
+    If wsOrigem Is Nothing Then
+        MsgBox "A aba especificada não existe. Por favor, insira um nome de aba válido.", vbCritical
+        Exit Sub
+    End If
+    
+    ' Definir a planilha de destino
+    Set wsDestino = ThisWorkbook.Sheets("Planilha2")
+    
+    ' Solicitar ao usuário para escolher a coluna de origem (onde o nome "SERRA" será encontrado)
+    colunaOrigem = InputBox("Digite o número da coluna de origem (onde está o nome 'SERRA'):", "Coluna de Origem", 8) ' Default: 8 (coluna H)
+    
+    ' Solicitar ao usuário para escolher a célula de destino (onde os dados serão colados na Planilha2)
+    Dim linhaDestinoInput As String
+    linhaDestinoInput = InputBox("Digite a célula de destino onde os dados serão colados (exemplo: A1):", "Célula de Destino", "A1")
+    
+    ' Definir a célula de destino com base na entrada do usuário
+    Set destinoCelula = wsDestino.Range(linhaDestinoInput)
+    
+    ' Solicitar ao usuário o intervalo de colunas para copiar (por exemplo, 'A:G')
+    intervaloColunas = InputBox("Digite o intervalo de colunas que deseja copiar (exemplo: A:G):", "Intervalo de Colunas", "A:G")
+    
+    ' Separar o intervalo de colunas
+    intervaloArray = Split(intervaloColunas, ":")
+    
+    ' Converter as letras das colunas em números
+    inicioColuna = Range(intervaloArray(0) & "1").Column
+    fimColuna = Range(intervaloArray(1) & "1").Column
+    
+    ' Encontrar a última linha preenchida na coluna de origem da planilha de origem
+    ultimaLinha = wsOrigem.Cells(wsOrigem.Rows.Count, colunaOrigem).End(xlUp).Row
+    
+    ' Iniciar o loop para percorrer as células da coluna de origem na aba de origem
+    For Each celula In wsOrigem.Range(wsOrigem.Cells(1, colunaOrigem), wsOrigem.Cells(ultimaLinha, colunaOrigem))
+        ' Verificar se o valor da célula é "SERRA"
+        If celula.Value = "SERRA" Then
+            ' Copiar os dados do intervalo de colunas especificado da linha encontrada
+            wsOrigem.Range(wsOrigem.Cells(celula.Row, inicioColuna), wsOrigem.Cells(celula.Row, fimColuna)).Copy
+            ' Colar os dados na célula de destino da Planilha2
+            destinoCelula.PasteSpecial Paste:=xlPasteValues
+            ' Atualizar a célula de destino para a próxima linha
+            Set destinoCelula = destinoCelula.Offset(1, 0) ' Move para a próxima linha
+        End If
+    Next celula
+    
+    ' Exibir a mensagem final
+    MsgBox "Finalizado", vbInformation
+
+'___________________________________________________________________________,
+
+'<Fim!
+
+End Sub
+
+
+
